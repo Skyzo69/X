@@ -23,9 +23,24 @@ def get_headers(auth_token):
         "cookie": f"auth_token={auth_token}"
     }
 
-# Debugging response
+# Fungsi untuk memverifikasi token (login)
+def verify_auth(auth_token):
+    url = "https://x.com/i/api/1.1/account/verify_credentials.json"
+    response = requests.get(url, headers=get_headers(auth_token))
+    
+    if response.status_code == 200:
+        print("✅ Login berhasil!")
+        return True
+    else:
+        print(f"❌ Login gagal! Status Code: {response.status_code}")
+        print(f"⚠️ Error: {response.text}")
+        return False
+
+# Debugging response dengan lebih banyak informasi
 def debug_response(response):
     print(f"Status Code: {response.status_code}")
+    if response.status_code != 200:
+        print(f"⚠️ ERROR: {response.text}")  # Menampilkan pesan error dari server jika ada
     try:
         json_data = response.json()
         print(f"Response JSON: {json.dumps(json_data, indent=2)}")
@@ -65,6 +80,10 @@ def follow_user(auth_token, user_id):
 # Fungsi utama untuk eksekusi tiap akun
 def process_account(index, auth_token, tweet_id, comment, follow_id):
     try:
+        if not verify_auth(auth_token):  # Verifikasi token login terlebih dahulu
+            print(f"[{index+1}] ❌ Login gagal untuk akun {index+1}. Melanjutkan ke akun berikutnya.")
+            return
+        
         print(f"[{index+1}] Akun memproses Tweet {tweet_id}...")
 
         like_response = like_tweet(auth_token, tweet_id)
